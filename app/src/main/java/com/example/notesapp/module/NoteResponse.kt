@@ -1,6 +1,6 @@
 package com.example.notesapp.module
 
-data class NoteResponce(
+data class NoteResponse(
     val __v : Int,
     val _id: String,
     val createdAt: String,

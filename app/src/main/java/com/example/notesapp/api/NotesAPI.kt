@@ -1,24 +1,24 @@
 package com.example.notesapp.api
 
 import com.example.notesapp.module.NoteRequest
-import com.example.notesapp.module.NoteResponce
+import com.example.notesapp.module.NoteResponse
 import retrofit2.Response
 import retrofit2.http.*
 
 interface NoteAPI {
 
     @POST("/note")
-    suspend fun createNote(@Body noteRequest: NoteRequest): Response<NoteRequest>
+    suspend fun createNote(@Body noteRequest: NoteRequest): Response<NoteResponse>
 
     @GET("/note")
-    suspend fun getNotes(): Response<List<NoteResponce>>
+    suspend fun getNotes(): Response<List<NoteResponse>>
 
     @DELETE("/note/{noteId}")
-    suspend fun deleteNote(@Path("noteId") noteId: String) : Response<NoteResponce>
+    suspend fun deleteNote(@Path("noteId") noteId: String) : Response<NoteResponse>
 
     @PUT("/note/{noteId}")
     suspend fun updateNote(
         @Path("noteId") noteId: String,
         @Body noteRequest: NoteRequest
-    ): Response<NoteResponce>
+    ): Response<NoteResponse>
 }

@@ -1,26 +1,26 @@
 package com.example.notesapp
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.notesapp.api.NoteAPI
-import com.example.notesapp.utils.Constants.CHEEZYCODE
+import android.widget.Toast
+import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.example.notesapp.databinding.FragmentMainBinding
+import com.example.notesapp.utils.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
+    private var _binding: FragmentMainBinding?=null
+    private  val binding get() = _binding!!
+    private  val noteViewModel by viewModels<NoteViewModel>()
 
-   @Inject
-   lateinit var  noteAPI: NoteAPI
-
+    private lateinit var adapter: NoteAdapter
 
 
     override fun onCreateView(
@@ -28,12 +28,40 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val response= noteAPI.getNotes()
-            Log.d(CHEEZYCODE, response.body().toString())
-        }
+        _binding=FragmentMainBinding.inflate(inflater,container,false)
+        adapter=NoteAdapter {  }
+        return binding.root
+    }
 
-        return inflater.inflate(R.layout.fragment_main, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        bindObserver()
+        noteViewModel.getNotes()
+        binding.noteList.layoutManager=StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        binding.noteList.adapter=adapter
+    }
+
+    private fun bindObserver() {
+        noteViewModel.notesLiveData.observe(viewLifecycleOwner, Observer {
+            binding.progressBar.isVisible=false
+            when(it)
+            {
+                is NetworkResult.Success ->{
+                    adapter.submitList(it.data)
+                }
+                is NetworkResult.Error ->  {
+                    Toast.makeText(requireContext(),it.message,Toast.LENGTH_LONG).show()
+                }
+                is NetworkResult.Loading -> {
+                    binding.progressBar.isVisible=true
+                }
+            }
+        })
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding=null
     }
 
 
